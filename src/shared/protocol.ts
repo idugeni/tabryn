@@ -50,7 +50,7 @@ const errorMessageSchema = baseMessageSchema.extend({
 const toolRequestSchema = baseMessageSchema.extend({
   type: z.literal("tool_request"),
   tool: z.string(),
-  args: z.record(z.unknown()),
+  args: z.record(z.string(), z.unknown()),
 });
 
 const toolResponseSchema = baseMessageSchema.extend({

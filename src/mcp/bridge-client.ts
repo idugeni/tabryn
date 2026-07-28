@@ -72,7 +72,7 @@ export class BridgeClient extends EventEmitter {
         resolve();
       });
 
-      this.socket.on("data", (chunk) => {
+      this.socket.on("data", (chunk: Buffer) => {
         this.handleData(chunk);
       });
 
