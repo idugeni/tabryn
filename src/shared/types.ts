@@ -20,7 +20,9 @@ export type MessageType =
   | "connect"
   | "disconnect"
   | "heartbeat"
-  | "error";
+  | "error"
+  | "register"
+  | "registered";
 
 // ─── Core Messages ──────────────────────────────────────────────────
 
@@ -48,6 +50,17 @@ export interface ErrorMessage extends TabrynMessage {
   type: "error";
   error: string;
   code?: string;
+}
+
+export interface RegisterMessage extends TabrynMessage {
+  type: "register";
+  extensionId: string;
+}
+
+export interface RegisteredMessage extends TabrynMessage {
+  type: "registered";
+  success: boolean;
+  extensionId: string;
 }
 
 // ─── Tool Messages ──────────────────────────────────────────────────
@@ -307,6 +320,8 @@ export type AnyMessage =
   | DisconnectMessage
   | HeartbeatMessage
   | ErrorMessage
+  | RegisterMessage
+  | RegisteredMessage
   | ToolRequest
   | ToolResponse
   | ToolErrorMessage;

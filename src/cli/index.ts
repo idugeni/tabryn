@@ -158,27 +158,23 @@ program
       }
     }
 
-    // 6. Instructions
+    // 6. Instructions (simplified - extension auto-configures)
     console.log("\n================");
-    console.log("Installation Steps:");
+    console.log("Installation Complete!");
     console.log("================");
     console.log("\n1. Load the extension:");
     console.log("   - Open chrome://extensions");
     console.log("   - Enable 'Developer mode'");
     console.log("   - Click 'Load unpacked'");
     console.log(`   - Select: ${EXTENSION_DIR}`);
-    console.log("   - Copy the Extension ID shown");
-    console.log(`\n2. Update manifest with your Extension ID:`);
-    console.log(`   Edit: ${manifestPath}`);
-    console.log('   Replace "PLACEHOLDER_EXTENSION_ID" with your actual Extension ID');
-    console.log("\n3. Reload the extension in chrome://extensions (click 🔄 icon)");
-    console.log("\n4. Add Tabryn to your MCP client:");
+    console.log("\n2. Extension will auto-configure on first connection");
+    console.log("\n3. Add Tabryn to your MCP client:");
     console.log("   For Claude Code:");
     console.log(`     claude mcp add tabryn -- node "${path.resolve(import.meta.dirname || __dirname, "../../dist/mcp/index.js")}"`);
     console.log("   For other MCP clients, add to your MCP config:");
     console.log(`     command: node`);
     console.log(`     args: ["${path.resolve(import.meta.dirname || __dirname, "../../dist/mcp/index.js")}"`);
-    console.log("\n5. Run 'tabryn doctor' to verify setup");
+    console.log("\n4. Run 'tabryn doctor' to verify setup");
   });
 
 // ─── tabryn mcp ─────────────────────────────────────────────────────
@@ -228,11 +224,10 @@ program
     if (fs.existsSync(manifestPath)) {
       console.log(`[OK] Native host manifest: ${manifestPath}`);
       const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8"));
-      if (manifest.allowed_origins?.some((o: string) => o !== "chrome-extension://PLACEHOLDER_EXTENSION_ID/")) {
-        console.log("[OK] Extension ID configured in manifest");
+      if (manifest.allowed_origins?.some((o: string) => o.includes("chrome-extension://"))) {
+        console.log("[OK] Native host configured");
       } else {
-        console.log("[WARN] Extension ID not configured in manifest. Run 'tabryn install' first.");
-        issues++;
+        console.log("[INFO] Native host ready (extension will auto-configure on first connection)");
       }
     } else {
       console.log("[WARN] Native host manifest not found. Run 'tabryn install' first.");

@@ -66,6 +66,17 @@ const toolErrorMessageSchema = baseMessageSchema.extend({
   code: z.string().optional(),
 });
 
+const registerMessageSchema = baseMessageSchema.extend({
+  type: z.literal("register"),
+  extensionId: z.string(),
+});
+
+const registeredMessageSchema = baseMessageSchema.extend({
+  type: z.literal("registered"),
+  success: z.boolean(),
+  extensionId: z.string(),
+});
+
 // ─── Message Creation ───────────────────────────────────────────────
 
 export function createConnectMessage(): z.infer<typeof connectMessageSchema> {
@@ -154,6 +165,8 @@ const messageSchemas: Record<MessageType, z.ZodType> = {
   disconnect: disconnectMessageSchema,
   heartbeat: heartbeatMessageSchema,
   error: errorMessageSchema,
+  register: registerMessageSchema,
+  registered: registeredMessageSchema,
   tool_request: toolRequestSchema,
   tool_response: toolResponseSchema,
   tool_error: toolErrorMessageSchema,

@@ -15,9 +15,14 @@
  */
 
 import net from "node:net";
+import fs from "node:fs";
+import path from "node:path";
+import os from "node:os";
 import { DEFAULT_PORT, ERROR_CODES } from "../shared/constants.js";
 import { decodeNativeMessages, createToolErrorMessage } from "../shared/protocol.js";
-import type { AnyMessage, ToolRequest } from "../shared/types.js";
+import type { AnyMessage, ToolRequest, RegisterMessage } from "../shared/types.js";
+
+const NATIVE_HOST_NAME = "io.tabryn.native_host";
 
 // ─── State ──────────────────────────────────────────────────────────
 
@@ -107,6 +112,13 @@ function connectTcp(): void {
 function handleNativeMessage(msg: AnyMessage): void {
   if (msg.type === "heartbeat") return;
 
+  // Handle extension registration (auto-configure)
+  if (msg.type === "register") {
+    const registerMsg = msg as RegisterMessage;
+    handleExtensionRegister(registerMsg.extensionId);
+    return;
+  }
+
   // Forward tool requests to MCP server via TCP
   if (msg.type === "tool_request") {
     const toolMsg = msg as ToolRequest;
@@ -130,6 +142,72 @@ function handleNativeMessage(msg: AnyMessage): void {
   if (msg.type === "tool_response" || msg.type === "tool_error") {
     writeNativeMessage(msg);
     return;
+  }
+}
+
+// ─── Extension Registration (Auto-Configure) ────────────────────────
+
+function handleExtensionRegister(extensionId: string): void {
+  process.stderr.write(`[tabryn-bridge] Extension registered: ${extensionId}\n`);
+
+  // Get manifest path
+  const manifestDir = getNativeHostManifestPath();
+  const manifestPath = path.join(manifestDir, `${NATIVE_HOST_NAME}.json`);
+
+  if (!fs.existsSync(manifestPath)) {
+    process.stderr.write(`[tabryn-bridge] Manifest not found: ${manifestPath}\n`);
+    return;
+  }
+
+  // Read and update manifest
+  try {
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf-8"));
+
+    // Check if already configured
+    if (manifest.allowed_origins?.some((o: string) => o.includes(extensionId))) {
+      process.stderr.write(`[tabryn-bridge] Extension ID already configured\n`);
+      return;
+    }
+
+    // Update manifest with actual Extension ID
+    manifest.allowed_origins = [`chrome-extension://${extensionId}/`];
+    fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 2));
+
+    process.stderr.write(`[tabryn-bridge] Manifest updated with Extension ID: ${extensionId}\n`);
+    process.stderr.write(`[tabryn-bridge] Reload extension to apply changes\n`);
+
+    // Send confirmation to extension
+    writeNativeMessage({
+      id: `reg_${Date.now()}`,
+      type: "registered",
+      success: true,
+      extensionId,
+      timestamp: Date.now(),
+    } as AnyMessage);
+  } catch (err) {
+    process.stderr.write(`[tabryn-bridge] Failed to update manifest: ${err}\n`);
+  }
+}
+
+function getNativeHostManifestPath(): string {
+  const platform = process.platform;
+
+  switch (platform) {
+    case "win32":
+      return path.join(os.homedir(), "AppData", "Local", "Tabryn", "native_hosts");
+    case "darwin":
+      return path.join(
+        os.homedir(),
+        "Library",
+        "Application Support",
+        "Google",
+        "Chrome",
+        "NativeMessagingHosts"
+      );
+    case "linux":
+      return path.join(os.homedir(), ".config", "google-chrome", "NativeMessagingHosts");
+    default:
+      return "";
   }
 }
 

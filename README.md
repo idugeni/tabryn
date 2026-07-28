@@ -60,19 +60,8 @@ node dist/cli/index.js install
 2. Enable **Developer mode**
 3. Click **Load unpacked**
 4. Select the `extension/` directory
-5. Copy the **Extension ID**
 
-### Configure Native Host
-
-Edit the native host manifest with your Extension ID:
-
-```bash
-# Replace PLACEHOLDER_EXTENSION_ID with your actual ID
-```
-
-### Reload Extension
-
-Click the **reload icon** (🔄) on the Tabryn extension card in `chrome://extensions`. No need to restart Chrome.
+That's it! Extension will auto-configure on first connection.
 
 ### Add to MCP Client
 

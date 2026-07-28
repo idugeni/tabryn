@@ -13,6 +13,7 @@ const NATIVE_HOST_NAME = "io.tabryn.native_host";
 let nativePort = null;
 let reconnectTimer = null;
 const RECONNECT_INTERVAL = 2000;
+let isRegistered = false;
 
 // ─── CDP State ──────────────────────────────────────────────────────
 
@@ -44,8 +45,18 @@ function connectNative() {
     nativePort.onDisconnect.addListener(() => {
       console.warn("[Tabryn] Native host disconnected:", chrome.runtime.lastError?.message);
       nativePort = null;
+      isRegistered = false;
       scheduleReconnect();
     });
+
+    // Auto-register: send extension ID on first connection
+    if (!isRegistered) {
+      sendToBridge({
+        type: "register",
+        extensionId: chrome.runtime.id,
+        timestamp: Date.now(),
+      });
+    }
   } catch (err) {
     console.error("[Tabryn] Failed to connect native host:", err);
     scheduleReconnect();
@@ -78,6 +89,13 @@ async function handleBridgeMessage(msg) {
     case "heartbeat":
       // Respond to keep alive
       sendToBridge({ id: msg.id, type: "heartbeat", timestamp: Date.now() });
+      break;
+    case "registered":
+      // Extension ID was registered successfully
+      if (msg.success) {
+        isRegistered = true;
+        console.log(`[Tabryn] Extension registered with ID: ${msg.extensionId}`);
+      }
       break;
   }
 }
