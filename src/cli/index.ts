@@ -171,7 +171,7 @@ program
     console.log(`\n2. Update manifest with your Extension ID:`);
     console.log(`   Edit: ${manifestPath}`);
     console.log('   Replace "PLACEHOLDER_EXTENSION_ID" with your actual Extension ID');
-    console.log("\n3. Restart Chrome (close all windows and reopen)");
+    console.log("\n3. Reload the extension in chrome://extensions (click 🔄 icon)");
     console.log("\n4. Add Tabryn to your MCP client:");
     console.log("   For Claude Code:");
     console.log(`     claude mcp add tabryn -- node "${path.resolve(import.meta.dirname || __dirname, "../../dist/mcp/index.js")}"`);

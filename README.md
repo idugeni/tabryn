@@ -70,9 +70,9 @@ Edit the native host manifest with your Extension ID:
 # Replace PLACEHOLDER_EXTENSION_ID with your actual ID
 ```
 
-### Restart Chrome
+### Reload Extension
 
-Close all Chrome windows and reopen.
+Click the **reload icon** (🔄) on the Tabryn extension card in `chrome://extensions`. No need to restart Chrome.
 
 ### Add to MCP Client
 
